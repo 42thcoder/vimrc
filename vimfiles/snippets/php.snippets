@@ -425,4 +425,21 @@ snippet tpas    传递数据
 	$this->assign(${0});
 snippet tpdi    模版渲染
 	$this->display(${0});
+# CodeIgniter框架
+snippet cill    加载类库
+	$this->load->library('${0}');
+snippet cilm    加载模型
+	$this->load->model('${0}');
+snippet cilv    加载视图
+	$this->load->view('${1}'${0});
+snippet cilh    加载辅助函数
+	$this->load->helper('${0}');
+snippet cild    加载数据库
+	$this->load->database();${0}
+snippet cildf   加载数据库维护
+	$this->load->dbforge();${0}
+snippet cicl    加载配置文件
+	$this->config->load('${0}');
+snippet cici    获取配置项
+	$this->config->item('${0}');
 ################
