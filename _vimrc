@@ -1,6 +1,6 @@
 " -----------------   Author: Ruchee
 " -----------------    Email: my@ruchee.com
-" -----------------     Date: 2014-02-10 15:43
+" -----------------     Date: 2014-02-12 12:13
 " -----------------    https://github.com/ruchee/vimrc
 
 
@@ -332,23 +332,19 @@ if g:isWIN
 else
     let g:snippets_dir = '~/.vim/snippets/'
 endif
-let g:snipMate                             = {}
+let g:snipMate                           = {}
 " 设置补全项之间的继承关系，比如 PHP补全继承HTML的补全
-let g:snipMate.scope_aliases               = {}
-let g:snipMate.scope_aliases['c']          = 'cpp'
-let g:snipMate.scope_aliases['php']        = 'php,html'
-let g:snipMate.scope_aliases['smarty']     = 'smarty,thinkphp,html'
-let g:snipMate.scope_aliases['twig']       = 'twig,html'
-let g:snipMate.scope_aliases['html.twig']  = 'twig,html'
-let g:snipMate.scope_aliases['blade']      = 'blade,html'
-let g:snipMate.scope_aliases['htmldjango'] = 'django,html'
-let g:snipMate.scope_aliases['jinja']      = 'jinja,html'
-let g:snipMate.scope_aliases['eruby']      = 'eruby,html'
-let g:snipMate.scope_aliases['scss']       = 'scss,css'
-let g:snipMate.scope_aliases['jst']        = 'jst,html'
-let g:snipMate.scope_aliases['less']       = 'less,css'
-let g:snipMate.scope_aliases['mustache']   = 'mustache,html'
-let g:snipMate.scope_aliases['xhtml']      = 'html'
+let g:snipMate.scope_aliases             = {}
+let g:snipMate.scope_aliases['c']        = 'cpp'
+let g:snipMate.scope_aliases['php']      = 'php,html'
+let g:snipMate.scope_aliases['smarty']   = 'smarty,thinkphp,html'
+let g:snipMate.scope_aliases['blade']    = 'blade,html'
+let g:snipMate.scope_aliases['eruby']    = 'eruby,html'
+let g:snipMate.scope_aliases['scss']     = 'scss,css'
+let g:snipMate.scope_aliases['jst']      = 'jst,html'
+let g:snipMate.scope_aliases['less']     = 'less,css'
+let g:snipMate.scope_aliases['mustache'] = 'mustache,html'
+let g:snipMate.scope_aliases['xhtml']    = 'html'
 
 
 " NERD_commenter      注释处理插件
