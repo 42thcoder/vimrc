@@ -1,6 +1,6 @@
 " -----------------   Author: Ruchee
 " -----------------    Email: my@ruchee.com
-" -----------------     Date: 2014-02-12 21:35
+" -----------------     Date: 2014-02-12 22:29
 " -----------------    https://github.com/ruchee/vimrc
 
 
@@ -182,11 +182,12 @@ set shiftwidth=4
 set tabstop=4
 
 " 对部分语言设置单独的缩进
-au FileType sh set shiftwidth=2
-au FileType sh set tabstop=2
+au FileType lisp,sh set shiftwidth=2
+au FileType lisp,sh set tabstop=2
 
 " 根据后缀名指定文件类型
 au BufRead,BufNewFile *.h   setlocal ft=c
+au BufRead,BufNewFile *.cl  setlocal ft=lisp
 au BufRead,BufNewFile *.tpl setlocal ft=smarty
 au BufRead,BufNewFile *.sql setlocal ft=mysql
 au BufRead,BufNewFile *.txt setlocal ft=txt
@@ -480,6 +481,8 @@ func! Compile_Run_Code()
         elseif
             exec "!g++ -Wall -std=c++11 -o %:r %:t && ./%:r"
         endif
+    elseif &filetype == "lisp"
+        exec "!clisp -i %:t"
     elseif &filetype == "php"
         exec "!php %:t"
     elseif &filetype == "javascript"
