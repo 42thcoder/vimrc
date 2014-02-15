@@ -5,15 +5,21 @@ snippet //      多行注释
 snippet -       分隔注释
 	// -------------------------------${0}
 # 全局相关
+snippet u       使用特性
+	"use ${1}";${0}
 snippet us      严格模式
 	"use strict";${0}
 snippet rq      导入包
 	require('${1}');${0}
 snippet vrq     导入包到变量
 	var ${1} = require('${2}');${0}
+snippet im      导入模块 [ES6新增]
+	import ${1};${0}
+snippet imf     从 .. 导入模块 [ES6新增]
+	import ${1} from ${2};${0}
 snippet ex      导出变量
 	exports.${0}
-snippet moex    覆盖导出
+snippet mex     覆盖导出
 	module.exports${0}
 # 函数、流程控制
 snippet f       常规函数
@@ -42,10 +48,12 @@ snippet fo      for
 	for (var ${1}) {
 	    ${0}
 	}
-snippet foi     for .. in
+snippet fi      for .. in
 	for (var ${1} in ${2}) {
 	    ${0}
 	}
+snippet fe      for each [ES6新增]
+	for each (${1})${0}
 snippet wh      while
 	while (${1}) {
 	    ${0}
@@ -87,8 +95,10 @@ snippet br      中断
 	break;${0}
 snippet re      返回
 	return ${0};
-snippet yi      转移执行 [ES6关键字]
+snippet yi      转移执行 [ES6新增]
 	yield ${0};
+snippet con     常量 [ES6新增]
+	const ${0};
 snippet de      删除
 	delete ${0};
 snippet ev      执行代码
@@ -127,6 +137,12 @@ snippet cl      终端输出
 	console.log(${0});
 snippet len     获取字符串长度
 	length${0}
+snippet l       创建块级作用域 [ES6新增]
+	let ${0};
+snippet l.      let多行模式
+	let (${1}) {
+	    ${0}
+	}
 snippet v       var
 	var ${0};
 snippet n       new
