@@ -65,9 +65,9 @@ endfunction
 
 function! SyntaxCheckers_html_validator_GetLocList() dict
     let fname = syntastic#util#shexpand('%')
-    let makeprg = self.getExec() . ' -s --compressed -F out=gnu -F asciiquotes=yes' .
-        \ (!empty(g:syntastic_html_validator_parser) ? ' -F parser=' . g:syntastic_html_validator_parser : '') .
-        \ (!empty(g:syntastic_html_validator_nsfilter) ? ' -F nsfilter=' . g:syntastic_html_validator_nsfilter : '') .
+    let makeprg = self.getExecEscaped() . ' -s --compressed -F out=gnu -F asciiquotes=yes' .
+        \ (g:syntastic_html_validator_parser != '' ? ' -F parser=' . g:syntastic_html_validator_parser : '') .
+        \ (g:syntastic_html_validator_nsfilter != '' ? ' -F nsfilter=' . g:syntastic_html_validator_nsfilter : '') .
         \ ' -F doc=@' . fname . '\;type=text/html\;filename=' . fname . ' ' . g:syntastic_html_validator_api
 
     let errorformat =

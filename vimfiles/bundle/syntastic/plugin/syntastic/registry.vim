@@ -8,6 +8,8 @@ let s:defaultCheckers = {
         \ 'ada':         ['gcc'],
         \ 'applescript': ['osacompile'],
         \ 'asciidoc':    ['asciidoc'],
+        \ 'asm':         ['gcc'],
+        \ 'bemhtml':     ['bemhtmllint'],
         \ 'c':           ['gcc'],
         \ 'chef':        ['foodcritic'],
         \ 'co':          ['coco'],
@@ -63,16 +65,18 @@ let s:defaultCheckers = {
         \ 'sass':        ['sass'],
         \ 'scala':       ['fsc', 'scalac'],
         \ 'scss':        ['sass', 'scss_lint'],
-        \ 'sh':          ['sh'],
+        \ 'sh':          ['sh', 'shellcheck'],
         \ 'slim':        ['slimrb'],
         \ 'tcl':         ['nagelfar'],
         \ 'tex':         ['lacheck', 'chktex'],
+        \ 'texinfo':     ['makeinfo'],
         \ 'text':        ['atdtool'],
         \ 'twig':        ['twiglint'],
         \ 'typescript':  ['tsc'],
         \ 'vala':        ['valac'],
         \ 'verilog':     ['verilator'],
         \ 'vhdl':        ['ghdl'],
+        \ 'vim':         ['vimlint'],
         \ 'xhtml':       ['tidy'],
         \ 'xml':         ['xmllint'],
         \ 'xslt':        ['xmllint'],
@@ -80,7 +84,7 @@ let s:defaultCheckers = {
         \ 'yaml':        ['jsyaml'],
         \ 'z80':         ['z80syntaxchecker'],
         \ 'zpt':         ['zptlint'],
-        \ 'zsh':         ['zsh']
+        \ 'zsh':         ['zsh', 'shellcheck']
     \ }
 
 let s:defaultFiletypeMap = {
@@ -151,6 +155,9 @@ function! g:SyntasticRegistry.knownFiletypes()
     call extend(types, keys(s:defaultFiletypeMap))
     if exists('g:syntastic_filetype_map')
         call extend(types, keys(g:syntastic_filetype_map))
+    endif
+    if exists('g:syntastic_extra_filetypes') && type(g:syntastic_extra_filetypes) == type([])
+        call extend(types, g:syntastic_extra_filetypes)
     endif
     return syntastic#util#unique(types)
 endfunction

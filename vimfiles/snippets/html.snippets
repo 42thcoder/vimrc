@@ -102,9 +102,11 @@ snippet form    表单
 snippet input   输入框
 	<input type="${1}"${0} />
 snippet label   标签
-	<label${0}></label>
+	<label${1}>${0}</label>
 snippet button  按钮
-	<button type="${1:button}"${0}></button>
+	<button type="button"${1}>${0}</button>
+snippet submit  提交按钮
+	<button type="submit"${1}>${0}</button>
 snippet img     图片
 	<img src="${1}"${0} />
 # 常用标签

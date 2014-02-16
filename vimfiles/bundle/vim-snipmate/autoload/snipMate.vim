@@ -22,17 +22,18 @@ let s:c.read_snippets_cached = get(s:c, 'read_snippets_cached', {'func' : functi
 
 " if filetype is objc, cpp, cs or cu also append snippets from scope 'c'
 " you can add multiple by separating scopes by ',', see s:AddScopeAliases
-" TODO add documentation to doc/*
 let s:c.scope_aliases = get(s:c, 'scope_aliases', {})
-" let s:c.scope_aliases.objc = get(s:c.scope_aliases, 'objc', 'c')
-" let s:c.scope_aliases.cpp = get(s:c.scope_aliases, 'cpp', 'c')
-" let s:c.scope_aliases.cu = get(s:c.scope_aliases, 'cu', 'c')
-" let s:c.scope_aliases.xhtml = get(s:c.scope_aliases, 'xhtml', 'html')
-" let s:c.scope_aliases.html = get(s:c.scope_aliases, 'html', 'javascript')
-" let s:c.scope_aliases.php = get(s:c.scope_aliases, 'php', 'php,html,javascript')
-" let s:c.scope_aliases.ur = get(s:c.scope_aliases, 'ur', 'html,javascript')
-" let s:c.scope_aliases.mxml = get(s:c.scope_aliases, 'mxml', 'actionscript')
-" let s:c.scope_aliases.eruby = get(s:c.scope_aliases, 'eruby', 'eruby-rails,html')
+if !exists('g:snipMate_no_default_aliases') || !g:snipMate_no_default_aliases
+	let s:c.scope_aliases.objc = get(s:c.scope_aliases, 'objc', 'c')
+	let s:c.scope_aliases.cpp = get(s:c.scope_aliases, 'cpp', 'c')
+	let s:c.scope_aliases.cu = get(s:c.scope_aliases, 'cu', 'c')
+	let s:c.scope_aliases.xhtml = get(s:c.scope_aliases, 'xhtml', 'html')
+	let s:c.scope_aliases.html = get(s:c.scope_aliases, 'html', 'javascript')
+	let s:c.scope_aliases.php = get(s:c.scope_aliases, 'php', 'php,html,javascript')
+	let s:c.scope_aliases.ur = get(s:c.scope_aliases, 'ur', 'html,javascript')
+	let s:c.scope_aliases.mxml = get(s:c.scope_aliases, 'mxml', 'actionscript')
+	let s:c.scope_aliases.eruby = get(s:c.scope_aliases, 'eruby', 'eruby-rails,html')
+endif
 
 " set this to "\<tab>" to make snipmate not swallow tab (make sure to not have
 " expandtab set). Remember that you can always enter tabs by <c-v> <tab> then
@@ -78,7 +79,7 @@ fun! snipMate#expandSnip(snip, col)
 	endif
 
 	" Insert snippet with proper indentation
-	let indent = indent(lnum) + 1
+	let indent = match(line, '\S\|$') + 1
 	call setline(lnum, line . snipLines[0])
 	call append(lnum, map(snipLines[1:], "empty(v:val) ? v:val : '" . strpart(line, 0, indent - 1) . "' . v:val"))
 
@@ -181,7 +182,7 @@ fun! s:ProcessSnippet(snip)
 	endif
 
 	if &et " Expand tabs to spaces if 'expandtab' is set.
-		return substitute(snippet, '\t', repeat(' ', &sts ? &sts : &sw), 'g')
+		return substitute(snippet, '\t', repeat(' ', (&sts > 0) ? &sts : &sw), 'g')
 	endif
 	return snippet
 endf
@@ -374,10 +375,14 @@ function! s:state_proto.update_vars(change)
 			let i += 1
 		endif
 
+		" Split the line into three parts: the mirror, what's before it, and
+		" what's after it. Then combine them using the new mirror string.
+		" Subtract one to go from column index to byte index
 		let theline = getline(lnum)
-		" subtract -1 to go from column byte index to string byte index
-		" subtract another -1 to exclude the col'th element
-		call setline(lnum, theline[0:(col-2)] . newWord . theline[(col+self.end_col-self.start_col-a:change-1):])
+		let update  = strpart(theline, 0, col - 1)
+		let update .= newWord
+		let update .= strpart(theline, col + self.end_col - self.start_col - a:change - 1)
+		call setline(lnum, update)
 	endfor
 
 	" Reposition the cursor in case a var updates on the same line but before
@@ -705,12 +710,25 @@ fun! s:ChooseSnippet(snippets)
 	return funcref#Call(a:snippets[keys(a:snippets)[idx]])
 endf
 
-fun! snipMate#ShowAvailableSnips()
-	let col   = col('.')
-	let word  = matchstr(getline('.'), '\S\+\%'.col.'c')
+fun! snipMate#WordBelowCursor()
+	return matchstr(getline('.'), '\S\+\%' . col('.') . 'c')
+endf
 
-	let snippets = map(snipMate#GetSnippetsForWordBelowCursor(word, '*', 0),'v:val[0]')
-	let matches = filter(snippets, "v:val =~# '\\V\\^" . escape(word, '\') . "'")
+fun! snipMate#GetSnippetsForWordBelowCursorForComplete(word)
+	let snippets = map(snipMate#GetSnippetsForWordBelowCursor(a:word, '*', 0), 'v:val[0]')
+	return filter(snippets, "v:val =~# '\\V\\^" . escape(a:word, '\') . "'")
+endf
+
+fun! snipMate#CanBeTriggered()
+	let word    = snipMate#WordBelowCursor()
+	let matches = snipMate#GetSnippetsForWordBelowCursorForComplete(word)
+	return len(matches) > 0
+endf
+
+fun! snipMate#ShowAvailableSnips()
+	let col     = col('.')
+	let word    = snipMate#WordBelowCursor()
+	let matches = snipMate#GetSnippetsForWordBelowCursorForComplete(word)
 
 	" Pretty hacky, but really can't have the tab swallowed!
 	if len(matches) == 0
@@ -722,10 +740,8 @@ fun! snipMate#ShowAvailableSnips()
 	return ''
 endf
 
-
-" user interface implementation {{{1
-
-fun! snipMate#TriggerSnippet()
+" Pass an argument to force snippet expansion instead of triggering or jumping
+function! snipMate#TriggerSnippet(...)
 	if exists('g:SuperTabMappingForward')
 		if g:SuperTabMappingForward == "<tab>"
 			let SuperTabPlug = maparg('<Plug>SuperTabForward', 'i')
@@ -752,7 +768,7 @@ fun! snipMate#TriggerSnippet()
 		call feedkeys("\<tab>") | return ''
 	endif
 
-	if exists('b:snip_state')
+	if exists('b:snip_state') && a:0 == 0 " Jump only if no arguments
 		let jump = b:snip_state.jump_stop(0)
 		if type(jump) == 1 " returned a string
 			return jump
@@ -788,8 +804,7 @@ fun! snipMate#TriggerSnippet()
 	return word == ''
 	  \ ? "\<tab>"
 	  \ : "\<c-r>=snipMate#ShowAvailableSnips()\<cr>"
-endf
-
+endfunction
 
 fun! snipMate#BackwardsSnippet()
 	if exists('b:snip_state') | return b:snip_state.jump_stop(1) | endif
@@ -818,6 +833,5 @@ fun! snipMate#BackwardsSnippet()
 	endif
 	return "\<s-tab>"
 endf
-
 
 " vim:noet:sw=4:ts=4:ft=vim

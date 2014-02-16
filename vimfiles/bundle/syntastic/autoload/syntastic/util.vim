@@ -6,29 +6,9 @@ let g:loaded_syntastic_util_autoload = 1
 let s:save_cpo = &cpo
 set cpo&vim
 
-if !exists('g:syntastic_delayed_redraws')
-    let g:syntastic_delayed_redraws = 0
-endif
-
 " strwidth() was added in Vim 7.3; if it doesn't exist, we use strlen()
 " and hope for the best :)
 let s:width = function(exists('*strwidth') ? 'strwidth' : 'strlen')
-
-let s:redraw_delayed = 0
-let s:redraw_full = 0
-
-if g:syntastic_delayed_redraws
-    " CursorHold / CursorHoldI events are triggered if user doesn't press a
-    " key for &updatetime ms.  We change it only if current value is the default
-    " value, that is 4000 ms.
-    if &updatetime == 4000
-        let &updatetime = 500
-    endif
-
-    augroup syntastic
-        autocmd CursorHold,CursorHoldI * call syntastic#util#redrawHandler()
-    augroup END
-endif
 
 " Public functions {{{1
 
@@ -45,7 +25,7 @@ endfunction
 
 " Get directory separator
 function! syntastic#util#Slash() abort
-    return !exists("+shellslash") || &shellslash ? '/' : '\'
+    return (!exists("+shellslash") || &shellslash) ? '/' : '\'
 endfunction
 
 "search the first 5 lines of the file for a magic number and return a map
@@ -65,11 +45,18 @@ function! syntastic#util#parseShebang()
         if line =~ '^#!'
             let exe = matchstr(line, '\m^#!\s*\zs[^ \t]*')
             let args = split(matchstr(line, '\m^#!\s*[^ \t]*\zs.*'))
-            return {'exe': exe, 'args': args}
+            return { 'exe': exe, 'args': args }
         endif
     endfor
 
-    return {'exe': '', 'args': []}
+    return { 'exe': '', 'args': [] }
+endfunction
+
+" Get the value of a variable.  Allow local variables to override global ones.
+function! syntastic#util#var(name)
+    return
+        \ exists('b:syntastic_' . a:name) ? b:syntastic_{a:name} :
+        \ exists('g:syntastic_' . a:name) ? g:syntastic_{a:name} : ''
 endfunction
 
 " Parse a version string.  Return an array of version components.
@@ -90,17 +77,9 @@ endfunction
 "
 " See http://semver.org for info about version numbers.
 function! syntastic#util#versionIsAtLeast(installed, required)
-    for index in range(max([len(a:installed), len(a:required)]))
-        if len(a:installed) <= index
-            let installed_element = 0
-        else
-            let installed_element = a:installed[index]
-        endif
-        if len(a:required) <= index
-            let required_element = 0
-        else
-            let required_element = a:required[index]
-        endif
+    for idx in range(max([len(a:installed), len(a:required)]))
+        let installed_element = get(a:installed, idx, 0)
+        let required_element = get(a:required, idx, 0)
         if installed_element != required_element
             return installed_element > required_element
         endif
@@ -165,14 +144,17 @@ function! syntastic#util#findInParent(what, where)
         let root = here[0] . root[1:]
     endif
 
-    while !empty(here)
+    let old = ''
+    while here != ''
         let p = split(globpath(here, a:what), '\n')
 
         if !empty(p)
             return fnamemodify(p[0], ':p')
-        elseif here ==? root
+        elseif here ==? root || here ==? old
             break
         endif
+
+        let old = here
 
         " we use ':h:h' rather than ':h' since ':p' adds a trailing '/'
         " if 'here' is a directory
@@ -216,24 +198,11 @@ function! syntastic#util#decodeXMLEntities(string)
     return str
 endfunction
 
-" On older Vim versions calling redraw while a popup is visible can make
-" Vim segfault, so move redraws to a CursorHold / CursorHoldI handler.
 function! syntastic#util#redraw(full)
-    if !g:syntastic_delayed_redraws || !pumvisible()
-        call s:doRedraw(a:full)
-        let s:redraw_delayed = 0
-        let s:redraw_full = 0
+    if a:full
+        redraw!
     else
-        let s:redraw_delayed = 1
-        let s:redraw_full = s:redraw_full || a:full
-    endif
-endfunction
-
-function! syntastic#util#redrawHandler()
-    if s:redraw_delayed && !pumvisible()
-        call s:doRedraw(s:redraw_full)
-        let s:redraw_delayed = 0
-        let s:redraw_full = 0
+        redraw
     endif
 endfunction
 
@@ -250,28 +219,13 @@ endfunction
 
 " Private functions {{{1
 
-"Redraw in a way that doesnt make the screen flicker or leave anomalies behind.
-"
-"Some terminal versions of vim require `redraw!` - otherwise there can be
-"random anomalies left behind.
-"
-"However, on some versions of gvim using `redraw!` causes the screen to
-"flicker - so use redraw.
-function! s:doRedraw(full)
-    if a:full
-        redraw!
-    else
-        redraw
-    endif
-endfunction
-
 function! s:translateFilter(filters)
     let conditions = []
-    for [k, v] in items(a:filters)
-        if type(v) == type([])
-            call extend(conditions, map(copy(v), 's:translateElement(k, v:val)'))
+    for k in keys(a:filters)
+        if type(a:filters[k]) == type([])
+            call extend(conditions, map(copy(a:filters[k]), 's:translateElement(k, v:val)'))
         else
-            call add(conditions, s:translateElement(k, v))
+            call add(conditions, s:translateElement(k, a:filters[k]))
         endif
     endfor
     return len(conditions) == 1 ? conditions[0] : join(map(conditions, '"(" . v:val . ")"'), ' && ')
@@ -286,6 +240,8 @@ function! s:translateElement(key, term)
         let ret = 'v:val["text"] !~? ' . string(a:term)
     elseif a:key ==? 'file'
         let ret = 'bufname(str2nr(v:val["bufnr"])) !~# ' . string(a:term)
+    else
+        let ret = "1"
     endif
     return ret
 endfunction

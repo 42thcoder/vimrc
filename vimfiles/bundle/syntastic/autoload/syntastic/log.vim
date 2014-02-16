@@ -18,7 +18,6 @@ let s:global_options = [
     \ 'syntastic_check_on_open',
     \ 'syntastic_check_on_wq',
     \ 'syntastic_debug',
-    \ 'syntastic_delayed_redraws',
     \ 'syntastic_echo_current_error',
     \ 'syntastic_enable_balloons',
     \ 'syntastic_enable_highlighting',
@@ -97,7 +96,7 @@ function! syntastic#log#debugShowOptions(level, names)
 
     let vlist = type(a:names) == type("") ? [a:names] : a:names
     if !empty(vlist)
-        call map(vlist, "'&' . v:val . ' = ' . strtrans(string(eval('&' . v:val)))")
+        call map(copy(vlist), "'&' . v:val . ' = ' . strtrans(string(eval('&' . v:val)))")
         echomsg leader . join(vlist, ', ')
     endif
     call s:logRedirect(0)
