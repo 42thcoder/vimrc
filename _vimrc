@@ -1,6 +1,6 @@
 " -----------------   Author: Ruchee
 " -----------------    Email: my@ruchee.com
-" -----------------     Date: 2014-02-16 13:05
+" -----------------     Date: 2014-02-16 19:57
 " -----------------    https://github.com/ruchee/vimrc
 
 
@@ -188,6 +188,7 @@ au FileType lua,ruby,eruby,coffee,haml,slim,jade,sh set tabstop=2
 " 根据后缀名指定文件类型
 au BufRead,BufNewFile *.h            setlocal ft=c
 au BufRead,BufNewFile *.tpl          setlocal ft=smarty
+au BufRead,BufNewFile *.dhtml        setlocal ft=htmldjango
 au BufRead,BufNewFile *.sql          setlocal ft=mysql
 au BufRead,BufNewFile *.txt          setlocal ft=txt
 au BufRead,BufNewFile CMakeLists.txt setlocal ft=cmake
@@ -334,22 +335,23 @@ else
     let g:snippets_dir = '~/.vim/snippets/'
 endif
 " 不使用插件自带的默认继承
-let g:snipMate_no_default_aliases         = 1
+let g:snipMate_no_default_aliases          = 1
 " 设置补全项之间的继承关系，比如 PHP补全继承HTML的补全
-let g:snipMate                            = {}
-let g:snipMate.scope_aliases              = {}
-let g:snipMate.scope_aliases['c']         = 'cpp'
-let g:snipMate.scope_aliases['php']       = 'php,html'
-let g:snipMate.scope_aliases['smarty']    = 'smarty,thinkphp,html'
-let g:snipMate.scope_aliases['blade']     = 'blade,html'
-let g:snipMate.scope_aliases['twig']      = 'twig,html'
-let g:snipMate.scope_aliases['html.twig'] = 'twig,html'
-let g:snipMate.scope_aliases['eruby']     = 'eruby,html'
-let g:snipMate.scope_aliases['scss']      = 'scss,css'
-let g:snipMate.scope_aliases['jst']       = 'jst,html'
-let g:snipMate.scope_aliases['less']      = 'less,css'
-let g:snipMate.scope_aliases['mustache']  = 'mustache,html'
-let g:snipMate.scope_aliases['xhtml']     = 'html'
+let g:snipMate                             = {}
+let g:snipMate.scope_aliases               = {}
+let g:snipMate.scope_aliases['c']          = 'cpp'
+let g:snipMate.scope_aliases['php']        = 'php,html'
+let g:snipMate.scope_aliases['smarty']     = 'smarty,thinkphp,html'
+let g:snipMate.scope_aliases['blade']      = 'blade,html'
+let g:snipMate.scope_aliases['twig']       = 'twig,html'
+let g:snipMate.scope_aliases['html.twig']  = 'twig,html'
+let g:snipMate.scope_aliases['htmldjango'] = 'django,html'
+let g:snipMate.scope_aliases['eruby']      = 'eruby,html'
+let g:snipMate.scope_aliases['scss']       = 'scss,css'
+let g:snipMate.scope_aliases['jst']        = 'jst,html'
+let g:snipMate.scope_aliases['less']       = 'less,css'
+let g:snipMate.scope_aliases['mustache']   = 'mustache,html'
+let g:snipMate.scope_aliases['xhtml']      = 'html'
 
 
 " NERD_commenter      注释处理插件
@@ -495,6 +497,8 @@ func! Compile_Run_Code()
         exec "!lua %:t"
     elseif &filetype == "php"
         exec "!php %:t"
+    elseif &filetype == "python"
+        exec "!python %:t"
     elseif &filetype == "ruby"
         exec "!ruby %:t"
     elseif &filetype == "coffee"
